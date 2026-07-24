@@ -46,6 +46,13 @@ class ClaudeCliTests(unittest.TestCase):
         self.assertEqual(structured_output["ok"], True)
         self.assertEqual(fenced["ok"], True)
 
+    def test_extract_payload_prefers_structured_output_without_expected_keys(self) -> None:
+        payload = extract_json_payload(
+            json.dumps({"type": "result", "structured_output": {"ok": True}, "result": ""}),
+        )
+
+        self.assertEqual(payload, {"ok": True})
+
     def test_reported_usage(self) -> None:
         usage = reported_usage_from_stdout(
             json.dumps(

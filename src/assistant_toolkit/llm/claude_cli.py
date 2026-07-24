@@ -204,10 +204,15 @@ def extract_json_payload(stdout: str, *, expected_keys: tuple[str, ...] = ()) ->
 
 
 def coerce_json_payload(value: Any, *, expected_keys: tuple[str, ...] = ()) -> dict[str, Any]:
+    if isinstance(value, dict):
+        for key in ("structured_output",):
+            nested = value.get(key)
+            if isinstance(nested, dict):
+                return coerce_json_payload(nested, expected_keys=expected_keys)
     if isinstance(value, dict) and _matches_expected(value, expected_keys):
         return value
     if isinstance(value, dict):
-        for key in ("structured_output", "result", "content", "message", "text"):
+        for key in ("result", "content", "message", "text"):
             nested = value.get(key)
             if isinstance(nested, str) and nested.strip():
                 raise_if_denied_structured_output(nested)
