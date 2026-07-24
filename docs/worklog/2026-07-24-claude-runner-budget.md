@@ -9,6 +9,8 @@ Date: 2026-07-24
 - `StructuredClaudeRunner` supports `max_budget_usd`, passed to Claude Code CLI
   as `--max-budget-usd`.
 - Claude Code JSON wrapper parsing now prefers `structured_output` when present.
+- Claude subprocess calls now force `encoding="utf-8"` so Russian prompts are
+  not corrupted on Windows.
 
 ## Reason
 

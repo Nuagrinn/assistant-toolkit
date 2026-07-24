@@ -97,6 +97,7 @@ class ClaudeCliTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertIn("--json-schema", calls[0]["cmd"])
         self.assertEqual(calls[0]["input"], "user")
+        self.assertEqual(calls[0]["encoding"], "utf-8")
         self.assertEqual(calls[0]["env"]["CLAUDE_CODE_OAUTH_TOKEN"], "token")
 
     def test_structured_runner_can_replace_system_prompt_and_limit_budget(self) -> None:

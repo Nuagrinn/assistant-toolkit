@@ -149,6 +149,7 @@ class StructuredClaudeRunner:
                 cmd,
                 input=user_prompt,
                 text=True,
+                encoding="utf-8",
                 capture_output=True,
                 timeout=self.timeout_seconds,
                 cwd=str(self.cwd) if self.cwd else sandbox_cwd(),
