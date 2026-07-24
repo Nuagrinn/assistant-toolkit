@@ -99,6 +99,8 @@ class StructuredClaudeRunner:
         model: str = "",
         timeout_seconds: int = 120,
         allow_paid_api: bool = False,
+        max_budget_usd: float = 0,
+        system_prompt_mode: str = "append",
         cwd: str | Path | None = None,
         disallowed_tools: str = DISALLOWED_AGENT_TOOLS,
         run_command: RunCommand | None = None,
@@ -108,6 +110,8 @@ class StructuredClaudeRunner:
         self.model = model
         self.timeout_seconds = timeout_seconds
         self.allow_paid_api = allow_paid_api
+        self.max_budget_usd = max(0, float(max_budget_usd or 0))
+        self.system_prompt_mode = system_prompt_mode.strip().lower() or "append"
         self.cwd = Path(cwd) if cwd else None
         self.disallowed_tools = disallowed_tools
         self.run_command = run_command or subprocess.run
@@ -123,7 +127,7 @@ class StructuredClaudeRunner:
         cmd = [
             self.claude_bin,
             "--print",
-            "--append-system-prompt",
+            "--system-prompt" if self.system_prompt_mode in {"replace", "system"} else "--append-system-prompt",
             system_prompt,
             "--output-format",
             "json",
@@ -135,6 +139,8 @@ class StructuredClaudeRunner:
         ]
         if self.model:
             cmd.extend(["--model", self.model])
+        if self.max_budget_usd > 0:
+            cmd.extend(["--max-budget-usd", f"{self.max_budget_usd:g}"])
 
         started = time.perf_counter()
         input_chars = len(system_prompt) + len(user_prompt)
@@ -200,7 +206,7 @@ def coerce_json_payload(value: Any, *, expected_keys: tuple[str, ...] = ()) -> d
     if isinstance(value, dict) and _matches_expected(value, expected_keys):
         return value
     if isinstance(value, dict):
-        for key in ("result", "content", "message", "text"):
+        for key in ("structured_output", "result", "content", "message", "text"):
             nested = value.get(key)
             if isinstance(nested, str) and nested.strip():
                 raise_if_denied_structured_output(nested)
@@ -327,4 +333,3 @@ def output_preview(value: str | None, *, limit: int = 800) -> str:
     if len(text) <= limit:
         return text
     return text[:limit].rstrip() + "..."
-
